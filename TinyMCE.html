@@ -1,0 +1,648 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css" />
+    <link rel="stylesheet" href="https://cdn.bookingtimes.com/Styles/bootstrap-dialog.min.css" />
+    <link rel="stylesheet" href="https://cdn.bookingtimes.com/Styles/bootstrap-tour.min.css" />
+    <link href="https://cdn.bookingtimes.com/Common/LoadCSS.ashx?k=874288&amp;v=185.346" rel="stylesheet" type="text/css">
+    <link href="https://cdn.bookingtimes.com/Common/LoadImage.ashx?Id=12426" rel="shortcut icon" type="image/x-icon">
+    <link href="https://cdn.bookingtimes.com/Common/LoadCSS.ashx?k=874288&amp;v=185.346&amp;g=1" rel="stylesheet" type="text/css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js" type="text/javascript"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="https://cdn.bookingtimes.com/Scripts/jquery.slicknav.min.js" type="text/javascript"></script>
+    <script src="https://cdn.bookingtimes.com/Scripts/bootstrap-tour.min.js" type="text/javascript"></script>
+    <script src="./Scripts/tiny_mce/tinymce.min.js" type="text/javascript"></script>
+
+    <style>
+        #menuContainer {
+            background-color: black;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            $(".modal").on('shown', function () {
+                $(this).find("[autofocus]:first").focus();
+            });
+            $('.modal').on('hidden.bs.modal', function () {
+                imageSelected(0, 0);
+            })
+        });
+
+        $('#pnlAddVideo').on('shown.bs.modal', function () {
+            $('#ctl00_ContentPlaceHolder_tinyMCE_txtVideoURL').focus();
+        })
+
+        tinyMCE.init({
+            mode: "specific_textareas",
+            editor_selector: "mceEditor",
+            cleanup: false,
+            content_css: "https://bookingtimes.com/Styles/TinyMCE.min.css?v=1,https://bookingtimes.com/Styles/bootstrap.min.css?v=1,https://rightwaydriving.com.au/Common/LoadCSS.ashx,https://rightwaydriving.com.au/Common/LoadCSS.ashx?g=1,https://rightwaydriving.com.au/Common/LoadCSS.ashx?s=1,https://bookingtimes.com/Styles/Common.min.css?v=1",
+            plugins: "link,code,insertdatetime,preview,paste,table,visualblocks,fullscreen,image,emoticons,textcolor,colorpicker,lists,charmap,hr",                         // Theme options - button# indicated the row# only
+            menu: {
+                edit: { title: 'Edit', items: 'undo redo  | cut copy paste pastetext selectall | searchreplace' },
+                insert: { title: 'Insert', items: 'addimage addvideo link | charmap hr | template' },
+                format: { title: 'Format', items: 'strikethrough superscript subscript | removeformat' },
+                view: { title: 'View', items: 'visualblocks visualaid | preview fullscreen | code' },
+                table: { title: 'Table', items: 'inserttable tableprops deletetable | cell row column' }
+
+
+            },
+            images_dataimg_filter: function (img) {
+                return img.hasAttribute('internal-blob');
+            },
+
+            toolbar1: "formatselect , fontsizeselect | bold italic underline |  outdent indent | bullist numlist | alignleft aligncenter alignright |  forecolor backcolor",
+            style_formats: [{ title: 'h1', block: 'h1' },
+            { title: 'h2', block: 'h2' },
+            { title: 'h3', block: 'h3' },
+            { title: 'h4', block: 'h4' },
+            { title: 'h5', block: 'h5' }],
+            visualblocks_default_state: false,
+            end_container_on_empty_block: true,
+            resize: 'both',
+            browser_spellcheck: true,
+            paste_text_sticky: true,
+            paste_data_images: true,
+            inline_styles: true,
+            schema: 'html5',
+            valid_children: "+body[style|meta],+a[*],+input[*],+a[div|p|span],+input[div|p|span]",
+            extended_valid_elements: "div[*],iframe[*],,a[*],p[*],img[*],input[*],script[*],meta[*]",
+            allow_html_in_named_anchor: true,
+            remove_script_host: false,
+            convert_urls: false,
+            branding: false,
+            encoding: "",
+            //block_formats: 'Paragraph=p;Heading 2=h2;Heading 3=h3;Heading 4=h4;Heading 5=h5;Heading 6=h6;Address=address;Pre=pre',
+            theme_advanced_blockformats: 'p,address,pre,h1,h2,h3,h4,h5',
+            //theme_advanced_buttons1_add_before: "h1,h2,h3,h4,h5,h6,separator",
+            table_default_cellpadding: "0",
+            table_default_cellspacing: "0",
+            table_default_border: "1",
+            theme_advanced_resizing: true,
+            init_instance_callback: function () { if (typeof tinyMCE_Init == "function") { tinyMCE_Init(); } },
+
+
+            setup: function (ed) {
+                // Add custom buttons
+                ed.addMenuItem('addimage', {
+                    //text: 'Add Image',
+                    image: 'https://bookingtimes.com/Images/Actions/addImage.png',
+                    context: 'insert',
+                    text: 'Add Image',
+                    onclick: function () {
+                        var i = '<img width="0" />';
+
+                        document.getElementById("txtBody").value = ed.id;
+                        if (ed.getContent().indexOf(i) < 0) {
+                            ed.selection.setContent(i);
+                        }
+
+                        var prefix = ed.id.substring(0, ed.id.lastIndexOf("_")) + '_tinyMCE_btnAddImage_';
+                        click(prefix + "btnGeneral");
+                        click(prefix + "btnShow");
+                    }
+                });
+
+                ed.addMenuItem('addvideo', {
+                    text: 'Add Video',
+                    context: 'insert',
+                    image: 'https://bookingtimes.com/Images/Actions/AddMedia.png',
+                    onclick: function () {
+                        document.getElementById("txtBody").value = ed.id;
+                        var i = '<img alt="Video" />';
+                        if (ed.getContent().indexOf(i) < 0) {
+                            ed.selection.setContent(i);
+                        }
+                        click(ed.id.substring(0, ed.id.lastIndexOf("_")) + '_tinyMCE_btnAddVideo');
+                    }
+                });
+
+
+                ed.addMenuItem('template', {
+                    text: 'Layout Templates',
+                    menu: [{
+                        text: 'Text with image',
+                        onclick: function () {
+                            addContent(ed, '<p><img class="col-xs-12 col-md-6 floatRight center-sm fullwidth-sm padLg" style="padding-right: 0;" src="<%= CdnUrl %>/Common/LoadImage.ashx?Id=16917&amp;v=1" alt="">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p><p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>');
+                        }
+                    }]
+                });
+
+            }
+        });
+
+        function AddVideo() {
+            var id = document.getElementById("txtBody").value;
+            var txtVideoURL = document.getElementById(id.substring(0, id.lastIndexOf("_")) + '_tinyMCE_txtVideoURL');
+
+            var url = txtVideoURL.value;
+            if (url.indexOf("youtu") > 0) {
+                if (url.indexOf("<iframe") < 0) {
+                    url = url.replace('youtu.be/', 'www.youtube.com/embed/');
+                    url = url.replace('www.youtube.com/watch?v=', 'www.youtube.com/embed/');
+                    url = url.replace('&t=1s', '');
+                    url = '<iframe width="560" height="315" src="' + url + '?rel=0" frameborder="0" allowfullscreen></iframe>';
+                }
+            }
+            url = ' ' + url + ' ';
+
+            var content = tinymce.get(id).getContent();
+            content = content.replace('<img alt="Video" />', url);
+            tinymce.get(id).setContent(content);
+
+            txtVideoURL.value = '';
+        }
+
+        function CancelVideo() {
+            var id = document.getElementById("txtBody").value;
+            if (id == "") {
+                return;
+            }
+            var content = tinymce.get(id).getContent();
+            var imgVideo = '<img alt="Video" />';
+
+            content = content.replace("<p>" + imgVideo + "</p>", "");
+            content = content.replace(imgVideo, "");
+
+            tinymce.get(id).setContent(content);
+
+        }
+
+        function imageSelected(imageId, imageVers) {
+            var id = document.getElementById("txtBody").value;
+            if (id == "") {
+                return;
+            }
+            var content = tinymce.get(id).getContent();
+            var width = "";
+            if (document.getElementById(id).classList.contains("mceFullWidthImages")) {
+                width = " style='width:100%;'";
+            }
+            var blankImg = '<img width="0" />';
+            var newImg = "";
+
+            if (imageId != "" && imageId != "0") {
+                newImg = "<img src='https://cdn.bookingtimes.com/Common/LoadImage.ashx?Id=" + imageId + "&v=" + imageVers + "'" + width + " />";
+            }
+
+            content = content.replace("<p>" + blankImg + "</p>", newImg);
+            content = content.replace(blankImg, newImg);
+
+            tinymce.get(id).setContent(content);
+        }
+
+        function addContent(ed, text) {
+            tinymce.activeEditor.execCommand('mceInsertContent', false, text);
+        }
+    </script>
+</head>
+<body>
+    <a id="ctl00_lnkHeader" class="aspNetDisabled"><div id="ctl00_divHeaderBar" style="background:url('https://cdn.bookingtimes.com/Common/LoadImage.ashx?Id=12200&amp;v=6') repeat top center;"></div></a>
+    <div id="menuContainer" class="affix-top">
+        <div class="container">
+
+            <div id="ctl00_divMenu">
+                <div id="ctl00_divMenuRow">
+                    <div class="col-xs-12">
+                        <ul class="minor_nav hidden-xs">
+
+                            <li id="ctl00_liLocnMinor"><a id="ctl00_lnkLocnMinor" class="contact" href="../Locations">Phone&nbsp;&nbsp;<b>1300 657 040</b></a></li>
+                            <li id="ctl00_liSupport"><a onclick="ShowHelp();return false;" id="ctl00_lnkSupport" class="support" href="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$lnkSupport&quot;, &quot;&quot;, true, &quot;&quot;, &quot;&quot;, false, true))">Help</a></li>
+
+
+                            <li id="ctl00_liLogin" class="hidden-xs">
+                                <a id="ctl00_LoginView1_lnkLogout" class="logout" href="javascript:__doPostBack('ctl00$LoginView1$lnkLogout$ctl00','')">Logout</a>
+                            </li>
+                        </ul>
+                        <ul class="navButtons visible-xs mid-cent">
+                            <li><a><img id="ctl00_Image1" src="https://cdn.bookingtimes.com/Images/Mobile/menu.png" alt="Menu"></a></li>
+                            <li><a id="ctl00_lnkMobiBusPhone" href="tel://1300%20657%20040"><img id="ctl00_imgMobilePhone" src="https://cdn.bookingtimes.com/Images/Mobile/phone.png" alt="Phone"></a></li>
+                            <li><a id="ctl00_lnkMobiMap" href="../Locations" target="_blank"><img id="ctl00_imgMobileMap" src="https://cdn.bookingtimes.com/Images/Mobile/map.png" alt="Map"></a></li>
+                            <li><a id="ctl00_lnkMobiBookings" href="Bookings?Location=257&amp;SelDate=20191015"><img id="ctl00_imgMobileBook" src="https://cdn.bookingtimes.com/Images/Mobile/book.png" alt="Book Now"></a></li>
+                        </ul>
+                    </div>
+
+                    <ul id="topmenu">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <li id="ctl00_liDashboard"><a id="ctl00_lnkDash" href="Dashboard">Dashboard</a></li>
+                        <li id="ctl00_liBookings"><a id="ctl00_lnkBookings" href="Bookings?Location=257&amp;SelDate=20191015">Bookings</a></li>
+
+                        <li id="ctl00_liAdminCourses"><a id="ctl00_lnkAdminCourses" href="Courses">Courses</a></li>
+                        <li id="ctl00_liAdminSales">
+                            <a id="ctl00_lnkAdminProductSales" href="Sales">
+                                <span id="ctl00_spnUnproc" class="badge redBadge"></span>
+                                <span>Sales</span>
+                            </a>
+                        </li>
+                        <li id="ctl00_liAdminClients"><a id="ctl00_lnkAdminClients" href="Clients">Clients</a></li>
+                        <li id="ctl00_liAdminArticles"><a id="ctl00_lnkAdminArticles" href="Marketing">Marketing</a></li>
+                        <li id="ctl00_liReports"><a id="ctl00_lnkReports" href="Reports">Reports</a></li>
+
+
+                        <li id="ctl00_liMyAccountMob" class="visible-xs menuSpacer">
+
+                            My&nbsp;Account
+                            <ul>
+                                <li><a id="ctl00_lnkMyProfileMob" href="../Account/MyProfile">My Profile</a></li>
+                                <li><a id="ctl00_lnkMyBookingsMob" href="../Account/MyBookings">Bookings</a></li>
+                                <li><a id="ctl00_lnkOrdersMob" href="../Account/MyPurchases">Purchase History</a></li>
+                                <li><a id="ctl00_lnkFeedbackMob" href="../Account/Feedback">Feedback</a></li>
+                                <li><a id="ctl00_lnkChangePasswordMob" href="../Account/ChangePassword">Change Password</a></li>
+                            </ul>
+                        </li>
+
+                        <li id="ctl00_liSupportTabMob" class="visible-xs">
+                            <a onclick="ShowHelp();return false;" id="ctl00_lnkSupportTabMob" href="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$lnkSupportTabMob&quot;, &quot;&quot;, true, &quot;&quot;, &quot;&quot;, false, true))">Help</a>
+                        </li>
+
+                        <li id="ctl00_liAltLogin" class="hidden-xs">
+
+                            <a id="ctl00_LoginView2_lnkLogout2" class="logout" href="javascript:__doPostBack('ctl00$LoginView2$lnkLogout2$ctl00','')">Logout</a>
+
+                        </li>
+
+                        <li id="ctl00_liSettings" class=" active"><a id="ctl00_lnkSettings" href="Setup">Setup</a></li>
+
+                        <li id="ctl00_liSupportTab" class="hidden-xs">
+                            <a onclick="ShowHelp();return false;" id="ctl00_lnkSupportTab" href="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$lnkSupportTab&quot;, &quot;&quot;, true, &quot;&quot;, &quot;&quot;, false, true))">Help</a>
+                        </li>
+
+                        <li id="ctl00_liMyAccount" class="hidden-xs">
+                            <a id="ctl00_lnkMyAccount" href="../Account/MyAccount">
+                                My&nbsp;Account
+                            </a>
+                        </li>
+
+                        <li id="ctl00_liAltLoginMob" class="visible-xs">
+
+                            <a id="ctl00_LoginView3_lnkLogout2" class="logout" href="javascript:__doPostBack('ctl00$LoginView3$lnkLogout2$ctl00','')">Logout</a>
+
+                        </li>
+
+
+
+                    </ul>
+                    <div id="responsiveMenu">
+                        <div class="slicknav_menu">
+                            <a href="#" aria-haspopup="true" tabindex="0" class="slicknav_btn slicknav_collapsed" style="outline: none;"><span class="slicknav_menutxt"></span><span class="slicknav_icon slicknav_no-text"><span class="slicknav_icon-bar"></span><span class="slicknav_icon-bar"></span><span class="slicknav_icon-bar"></span></span></a><ul class="slicknav_nav slicknav_hidden" aria-hidden="true" role="menu" style="display: none;">
+
+
+                                <li><a href="Dashboard" role="menuitem" tabindex="-1">Dashboard</a></li>
+                                <li><a href="Bookings?Location=257&amp;SelDate=20191015" role="menuitem" tabindex="-1">Bookings</a></li>
+
+                                <li><a href="Courses" role="menuitem" tabindex="-1">Courses</a></li>
+                                <li>
+                                    <a href="Sales" role="menuitem" tabindex="-1">
+                                        <span class="badge redBadge"></span>
+                                        <span>Sales</span>
+                                    </a>
+                                </li>
+                                <li><a href="Clients" role="menuitem" tabindex="-1">Clients</a></li>
+                                <li><a href="Marketing" role="menuitem" tabindex="-1">Marketing</a></li>
+                                <li><a href="Reports" role="menuitem" tabindex="-1">Reports</a></li>
+
+
+                                <li class="visible-xs menuSpacer slicknav_collapsed slicknav_parent">
+                                    <a href="#" role="menuitem" aria-haspopup="true" tabindex="-1" class="slicknav_item slicknav_row" style="outline: none;">
+
+                                        My&nbsp;Account
+                                        <span class="slicknav_arrow">+</span>
+                                    </a><ul role="menu" class="slicknav_hidden" aria-hidden="true" style="display: none;">
+                                        <li><a href="../Account/MyProfile" role="menuitem" tabindex="-1">My Profile</a></li>
+                                        <li><a href="../Account/MyBookings" role="menuitem" tabindex="-1">Bookings</a></li>
+                                        <li><a href="../Account/MyPurchases" role="menuitem" tabindex="-1">Purchase History</a></li>
+                                        <li><a href="../Account/Feedback" role="menuitem" tabindex="-1">Feedback</a></li>
+                                        <li><a href="../Account/ChangePassword" role="menuitem" tabindex="-1">Change Password</a></li>
+                                    </ul>
+                                </li>
+
+                                <li class="visible-xs">
+                                    <a onclick="ShowHelp();return false;" href="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$lnkSupportTabMob&quot;, &quot;&quot;, true, &quot;&quot;, &quot;&quot;, false, true))" role="menuitem" tabindex="-1">Help</a>
+                                </li>
+
+                                <li class="hidden-xs">
+
+                                    <a class="logout" href="javascript:__doPostBack('ctl00$LoginView2$lnkLogout2$ctl00','')" role="menuitem" tabindex="-1">Logout</a>
+
+                                </li>
+
+                                <li class=" active"><a href="Setup" role="menuitem" tabindex="-1">Setup</a></li>
+
+                                <li class="hidden-xs">
+                                    <a onclick="ShowHelp();return false;" href="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$lnkSupportTab&quot;, &quot;&quot;, true, &quot;&quot;, &quot;&quot;, false, true))" role="menuitem" tabindex="-1">Help</a>
+                                </li>
+
+                                <li class="hidden-xs">
+                                    <a href="../Account/MyAccount" role="menuitem" tabindex="-1">
+                                        My&nbsp;Account
+                                    </a>
+                                </li>
+
+                                <li class="visible-xs">
+
+                                    <a class="logout" href="javascript:__doPostBack('ctl00$LoginView3$lnkLogout2$ctl00','')" role="menuitem" tabindex="-1">Logout</a>
+
+                                </li>
+
+
+
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="row" style="max-width:1300px;padding-top:30px;margin-left:auto;margin-right:auto;">
+        <div class="col-sm-3">
+            <ul id="sidemenu">
+                <li id="ctl00_ContentPlaceHolder_SideMenu_liBusinessDetail"><a id="ctl00_ContentPlaceHolder_SideMenu_lnkSetup" href="Setup"><span>Business Detail</span></a></li>
+                <li id="ctl00_ContentPlaceHolder_SideMenu_liHomePage" class="active"><a id="ctl00_ContentPlaceHolder_SideMenu_lnkHomePage" href="HomePage"><span>Home Page</span></a></li>
+                <li id="ctl00_ContentPlaceHolder_SideMenu_liServices"><a id="ctl00_ContentPlaceHolder_SideMenu_lnkService" href="Services"><span>Services</span></a></li>
+                <li id="ctl00_ContentPlaceHolder_SideMenu_liLocations"><a id="ctl00_ContentPlaceHolder_SideMenu_lnkLocations" href="Locations"><span>Locations</span></a></li>
+                <li id="ctl00_ContentPlaceHolder_SideMenu_liStaff"><a id="ctl00_ContentPlaceHolder_SideMenu_lnkStaffList" href="Instructors">Instructors</a></li>
+                <li id="ctl00_ContentPlaceHolder_SideMenu_liProducts"><a id="ctl00_ContentPlaceHolder_SideMenu_lnkProducts" href="Products"><span>Products</span></a></li>
+
+                <li id="ctl00_ContentPlaceHolder_SideMenu_liCorrespondence" class="postMenuSpacer"><a id="ctl00_ContentPlaceHolder_SideMenu_lnkCorrespondence" href="Correspondence"><span>Correspondence</span></a></li>
+
+                <li id="ctl00_ContentPlaceHolder_SideMenu_liLetterTemplates"><a id="ctl00_ContentPlaceHolder_SideMenu_lnkLetterTemplates" href="LetterTemplates"><span>Letter Templates</span></a></li>
+                <li id="ctl00_ContentPlaceHolder_SideMenu_liForms"><a id="ctl00_ContentPlaceHolder_SideMenu_lnkForms" href="Forms"><span>Custom Forms</span></a></li>
+                <li id="ctl00_ContentPlaceHolder_SideMenu_liChecklists"><a id="ctl00_ContentPlaceHolder_SideMenu_lnkChecklists" href="Checklists"><span>Checklists</span></a></li>
+
+
+                <li id="ctl00_ContentPlaceHolder_SideMenu_liMemberships"><a id="ctl00_ContentPlaceHolder_SideMenu_lnkMemberships" href="Setup/Memberships"><span>Memberships</span></a></li>
+                <li id="ctl00_ContentPlaceHolder_SideMenu_liPodcast"><a id="ctl00_ContentPlaceHolder_SideMenu_lnkPodcast" href="PodcastDefinition"><span>Podcast</span></a></li>
+                <li id="ctl00_ContentPlaceHolder_SideMenu_liLayout"><a id="ctl00_ContentPlaceHolder_SideMenu_lnkLayout" href="Layout"><span>Layout</span></a></li>
+
+            </ul>
+        </div>
+        <div class="col-sm-9">
+            <textarea rows="2" cols="20" id="txtBody" class="mceEditor" autocomplete="off" style="height: 600px; width: 100%;" aria-hidden="true">&lt;style&gt; .StaffImage {width:250px}&lt;/style&gt;
+
+&lt;p style="text-align: left;"&gt;&lt;/p&gt;
+&lt;div id="fb-root"&gt;&lt;/div&gt;
+&lt;p&gt;&lt;/p&gt;
+&lt;div id="fb-root"&gt;&lt;/div&gt;
+&lt;div class="slider full-width"&gt;
+&lt;div class="slider full-width"&gt;
+&lt;div class="slider full-width"&gt;
+&lt;div class="slider full-width"&gt;
+&lt;div class="carousel slide" data-ride="carousel"&gt;
+&lt;div class="carousel-inner"&gt;
+&lt;div class="item active" style="text-align: center;"&gt;&lt;a href="/Products" title="Click here Packages"&gt;&lt;img class="full-width" src="https://cdn.bookingtimes.com/Common/LoadImage.ashx?Id=17926&amp;v=1" /&gt;&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="package-section full-width"&gt;
+&lt;div class="container"&gt;
+&lt;div class="row"&gt;
+&lt;div class="col-sm-12 center-block text-center"&gt;
+&lt;h2 class="heading"&gt;Driving Lessons &amp; Packages&lt;/h2&gt;
+&lt;p&gt;New customer Keys 2 Drive package starts from $49.50 per hour.&lt;/p&gt;
+&lt;p&gt;Plan your learning and save with our lesson packages.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="price-package-list"&gt;
+&lt;div id="carousel-example-generic" class="carousel slide" data-ride="carousel"&gt;&lt;!-- Wrapper for slides --&gt;
+&lt;div class="carousel-inner"&gt;
+&lt;div class="item active "&gt;
+&lt;div class="row"&gt;
+&lt;div class="col-sm-4 text-center"&gt;
+&lt;div class="price_thumb starter"&gt;&lt;img src="https://cdn.bookingtimes.com/Common/LoadImage.ashx?Id=14686&amp;v=1" /&gt;
+&lt;div class="bottom_sec"&gt;
+&lt;h5&gt;Gift Vouchers&lt;/h5&gt;
+&lt;p&gt;Always the perfect gift!&lt;br /&gt;Professional driving lessons from QLD's Largest RACQ-Approved Driving School.&lt;/p&gt;
+&lt;div class="read_btn"&gt;&lt;a class="btn red-btn" href="/Products"&gt;buy gift voucher&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="col-sm-4 text-center"&gt;
+&lt;div class="price_thumb premium active"&gt;&lt;img src="https://cdn.bookingtimes.com/Common/LoadImage.ashx?Id=14687&amp;v=1" /&gt;&lt;br /&gt;
+&lt;div class="bottom_sec"&gt;
+&lt;h5&gt;Gold Package&lt;/h5&gt;
+&lt;p&gt;10 x 1 Hour Lessons for $650. Suitable for both new and existing customers. Get up to 30 hours in your log book. This package has a saving of&lt;strong&gt; $100&nbsp;&lt;/strong&gt;off our normal prices.&lt;/p&gt;
+&lt;div class="read_btn"&gt;&lt;a class="btn red-btn" href="/Product/6656/Auto-Gold-Package"&gt;buy gold package&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="col-sm-4 text-center"&gt;
+&lt;div class="price_thumb starter"&gt;&lt;img src="https://cdn.bookingtimes.com/Common/LoadImage.ashx?Id=14688&amp;v=1" /&gt;&lt;br /&gt;
+&lt;div class="bottom_sec"&gt;
+&lt;h5&gt;Blitz your TEST&lt;/h5&gt;
+&lt;p&gt;2 x 1 Hour Lessons,&lt;br /&gt;45 min Pre-Test Lesson&lt;br /&gt;&amp; 15 min Test Centre Preparation. Use of your Instructor's car for the test - all this for $298!&lt;/p&gt;
+&lt;div class="read_btn"&gt;&lt;a class="btn red-btn" href="/Product/6655/Auto-Blitz-Your-Test-Package"&gt;buy pre-test package&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="controls "&gt;&lt;!--&lt;a class="left fa fa-chevron-left btn btn-primary" href="#carousel-example-generic" data-slide="prev"&gt;&lt;/a&gt;&lt;a class="right fa fa-chevron-right btn btn-primary" href="#carousel-example-generic" data-slide="next"&gt;&lt;/a&gt;--&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="service-section full-width"&gt;
+&lt;div class="container padLg"&gt;
+&lt;div class="row padLg"&gt;
+&lt;div class="col-sm-12 center-block text-center"&gt;
+&lt;h2 class="heading"&gt;Our Services&lt;/h2&gt;
+&lt;!--&lt;p&gt;We offer driving lessons for both Queensland Learner Drivers and NSW Learner Drivers at any stage of the drivers’ licence process – any age and any level of driving ability. 10 hours of professional driving lessons with us can add 30 hours in your log book and then every additional hour can add a further hour.&lt;/p&gt;--&gt;&lt;/div&gt;
+&lt;div class="col-md-3 col-sm-6"&gt;
+&lt;div class="service-cols"&gt;
+&lt;div class="service-inner"&gt;
+&lt;div class="service-icon"&gt;&lt;img src="https://cdn.bookingtimes.com/Common/LoadImage.ashx?Id=12363&amp;v=1" /&gt;&lt;/div&gt;
+&lt;h3&gt;manual &amp; automatic&lt;/h3&gt;
+&lt;p&gt;Our automatic and manual driving lessons give you skills to become a better driver for life.&lt;/p&gt;
+&lt;/div&gt;
+&lt;a class="btn red-btn" href="/Bookings"&gt;book a lesson&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="col-md-3 col-sm-6"&gt;
+&lt;div class="service-cols"&gt;
+&lt;div class="service-inner"&gt;
+&lt;div class="service-icon"&gt;&lt;img src="https://cdn.bookingtimes.com/Common/LoadImage.ashx?Id=12362&amp;v=1" /&gt;&lt;/div&gt;
+&lt;h3&gt;Male &amp; Female Instructors&lt;/h3&gt;
+&lt;p&gt;Rightway Driving School has been teaching people to drive for the last 52 years and have highly qualified and experienced instructors.&lt;/p&gt;
+&lt;/div&gt;
+&lt;a class="btn red-btn" href="/Instructors"&gt;Meet our instructors&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="col-md-3 col-sm-6"&gt;
+&lt;div class="service-cols"&gt;
+&lt;div class="service-inner"&gt;
+&lt;div class="service-icon"&gt;&lt;img src="https://cdn.bookingtimes.com/Common/LoadImage.ashx?Id=12324&amp;v=1" alt="" /&gt;&lt;/div&gt;
+&lt;h3&gt;Lesson Packages&lt;/h3&gt;
+&lt;p&gt;You can book your driving lessons online or through our Queensland based booking office, and pay online, over the phone, in car or by EFT.&lt;/p&gt;
+&lt;/div&gt;
+&lt;a class="btn red-btn" href="/Products"&gt;view lesson packages&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="col-md-3 col-sm-6"&gt;
+&lt;div class="service-cols"&gt;
+&lt;div class="service-inner"&gt;
+&lt;div class="service-icon"&gt;&lt;img src="https://cdn.bookingtimes.com/Common/LoadImage.ashx?Id=12325&amp;v=1" alt="" /&gt;&lt;/div&gt;
+&lt;h3&gt;locations&lt;/h3&gt;
+&lt;p&gt;We are flexible with start and end locations which can include home, school, work or other nearby locations.&lt;/p&gt;
+&lt;/div&gt;
+&lt;a class="btn red-btn" href="/Locations"&gt;see our&nbsp; areas&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="welcome-section full-width"&gt;
+&lt;div class="container"&gt;
+&lt;div class="row"&gt;
+&lt;div class="col-xs-12 col-sm-3 ab-img"&gt;
+&lt;div class="wel-img "&gt;&lt;img src="https://cdn.bookingtimes.com/Common/LoadImage.ashx?Id=12327&amp;v=1" alt="driving student" class="img-responsive" /&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="col-xs-12 col-sm-9 center-block text-center"&gt;
+&lt;div class="wel-txt"&gt;
+&lt;h2 class="heading"&gt;Learn to drive with the best&lt;/h2&gt;
+&lt;p class="left-text"&gt;If you want to learn to drive in the Gold Coast, Brisbane, Ipswich or the Sunshine Coast then Rightway Driving School is the best place to start. If you want to learn to drive and have your L’s and looking for a driving school before you sit your driving test, Rightway Driving School’s driving school can help.&lt;/p&gt;
+&lt;p class="left-text"&gt;We offer driving lessons for both Queensland Learner Drivers and NSW Learner Drivers at any stage of the drivers’ licence process – any age and any level of driving ability. 10 hours of professional driving lessons with us can add 30 hours in your log book and then every additional hour can add a further hour.&lt;/p&gt;
+&lt;p class="left-text"&gt;We offer the convenience of a full self service portal online 24/7. You can book and pay for driving lessons, manage existing appointments and view/print invoices and receipts. To access the customer portal simply click here. Our motto is "safe driving, for life". This motto is not just about lifelong safe driving skills, but also preserving lives on the road through reduced fatalities from safer driving habits. We don't just say it, we live it!&lt;/p&gt;
+&lt;p class="left-text"&gt;Our driving school not only caters for young learner drivers, but also mature learners, overseas students and visitors.&lt;br /&gt;&nbsp;Sign up now for driving lessons or Call us on &lt;a href="tel:1300657040"&gt;1300 657 040&lt;/a&gt; for one of our friendly team to discuss our solutions.&lt;/p&gt;
+&lt;a class="btn red-btn" href="/Bookings"&gt;book now&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="testimonil-section full-width"&gt;
+&lt;div class="container"&gt;
+&lt;div class="row"&gt;
+&lt;div class="col-sm-12 testimonal_area"&gt;
+&lt;div class="col-sm-12 center-block text-center"&gt;
+&lt;h2 class="heading" style="text-shadow: 1px 1px 2px grey;"&gt;what our Students say&lt;/h2&gt;
+&lt;/div&gt;
+&lt;div class="testonial-s"&gt;
+&lt;div class="gradeus-stream" data-include-empty="false" data-review-limit="5" data-url="https://grade.us/rightwaydriving/"&gt;&lt;/div&gt;
+&lt;script&gt;!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.grade.us/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document, "script", "gradeus-wjs");&lt;/script&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="row"&gt;
+&lt;div class="col-xs-12 col-sm-4"&gt;&nbsp;&lt;/div&gt;
+&lt;div class="col-xs-12 col-sm-4 center"&gt;&lt;a class="btn red-btn" href="/Testimonials" style="margin-top: 30px;"&gt;More Testimonials&lt;/a&gt;&lt;/div&gt;
+&lt;div class="col-xs-12 col-sm-4"&gt;&nbsp;&lt;/div&gt;
+&lt;/div&gt;
+&lt;!-- instructors start --&gt;
+&lt;div class="instructors"&gt;
+&lt;div class="section-spacing"&gt;
+&lt;div class="row"&gt;
+&lt;div class="col-xs-12 center-block text-center" style="padding-top: 70px;"&gt;
+&lt;h2 class="heading"&gt;Our Instructors&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="row"&gt;
+&lt;div class="instructors-wrapper"&gt;
+&lt;div class="col-xs-12 col-sm-6 col-md-3 padLg center"&gt;@RandomStaff
+&lt;p class="center"&gt;Instructor&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="col-xs-12 col-sm-6 col-md-3 padLg center"&gt;@RandomStaff
+&lt;p class="center"&gt;Instructor&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="col-xs-12 col-sm-6 col-md-3 padLg center"&gt;@RandomStaff
+&lt;p class="center"&gt;Instructor&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="col-xs-12 col-sm-6 col-md-3 padLg center"&gt;@RandomStaff
+&lt;p class="center"&gt;Instructor&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="row more-instructors"&gt;
+&lt;div class="col-xs-12 col-sm-4"&gt;&nbsp;&lt;/div&gt;
+&lt;div class="col-xs-12 col-sm-4 center"&gt;&lt;a class="btn red-btn" href="/Instructors" style="margin-bottom: 70px;"&gt; More Instructors&lt;/a&gt;&lt;/div&gt;
+&lt;div class="col-xs-12 col-sm-4"&gt;&nbsp;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="welcome-section team-help full-width"&gt;
+&lt;div class="container"&gt;
+&lt;div class="row"&gt;
+&lt;div class="col-xs-12 col-md-7 padLg"&gt;
+&lt;div class="wel-txt"&gt;
+&lt;h2&gt;Let The Rightway Team Help You Drive safely Behind The Wheel Today!&lt;/h2&gt;
+&lt;h4&gt;“Teaching Queenslander' s to drive almost 60 years!&lt;/h4&gt;
+&lt;p&gt;If you want to learn to drive in the Gold Coast, Rightway Driving School is the best place to start. Since 1959 Rightway has delivered quality, professional driving lessons on the Gold Coast and surrounding areas. As the Coast has grown, so have we! Covering Northern NSW to Yatala and everywhere in between we will have the choice of professional Instructor that meets your needs.&lt;/p&gt;
+&lt;p&gt;We complete over 50,000 driving lessons per year with most areas having multiple Instructors available in Auto and Manual.&lt;/p&gt;
+&lt;p&gt;We can tailor specialised programs for students with special needs, high levels of anxiety or even help you convert your overseas licence.&nbsp;&lt;/p&gt;
+&lt;p&gt;Our motto is "safe driving, for life". This motto is not just about lifelong safe driving skills, but also preserving lives on the road through reduced fatalities from safer driving habits. We don't just say it, we live it! (and turn a blind eye when others copy it).&lt;/p&gt;
+&lt;a class="btn red-btn" href="/Bookings"&gt;Book Now&lt;/a&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="col-xs-12 col-md-5 ab-img center"&gt;
+&lt;div style="text-align: left;"&gt;&lt;iframe class="hp-video" style="border: 5px solid #f5cb1d;" src="https://www.youtube.com/embed/bqAEkSLiyY0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""&gt;&lt;/iframe&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;</textarea>
+
+        </div>
+    </div>
+
+
+    <bt:ImageSelector runat="server" ID="btnAddImage" ImageDestination="Other" OnClientClick="tinyMCE.triggerSave(false,true);" ShowButton="false" />
+
+    <asp:LinkButton runat="server" ID="btnAddVideo" data-toggle="modal" data-target="#pnlAddVideo" />
+
+    <asp:HiddenField ID="hfTextControlId" runat="server" />
+
+
+
+    <div id="pnlAddVideo" class="modal fade" role="dialog" aria-hidden="true" style="z-index:9999">
+        <div class="modal-dialog">
+            <div class="modal-c<b>ontent">
+                <div class="modal-header">
+                    <button id="btnCloseVideo" type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="CancelVideo();"><span aria-hidden="true">&times;</span></button>
+                    <h1>Add Video</h1>
+                </div>
+
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="col-xs-12 col-sm-2">
+                            <label>URL:</label>
+                        </div>
+                        <div class="col-xs-12 col-sm-10">
+                            <input id="ctl00_ContentPlaceHolder_tinyMCE_txtVideoURL" TextMode="Url" />
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <asp:Button ID="</b>tnAddVideoUrl" runat="server" Text="Add Video" class="bigbutton_primary" data-dismiss="modal" aria-label="Close" OnClientClick="AddVideo();" />
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
